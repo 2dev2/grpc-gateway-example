@@ -36,14 +36,10 @@ func (m *MicroServer) Echo(c context.Context, s *pb.EchoMessage) (*pb.EchoMessag
 	return s, nil
 }
 
-func newServer() *MicroServer {
-	return new(MicroServer)
-}
-
 // -----------------------------------------------------------------------------
 
-// Start the microserver
-func (ms *MicroServer) Start() error {
+// Start starts the microserver
+func (m *MicroServer) Start() error {
 	var err error
 
 	ctx := context.Background()
@@ -51,37 +47,33 @@ func (ms *MicroServer) Start() error {
 	defer cancel()
 
 	// tcpMuxer
-	tcpMux := cmux.New(ms.lis)
+	tcpMux := cmux.New(m.lis)
 
 	// Connection dispatcher rules
 	grpcL := tcpMux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldPrefixSendSettings("content-type", "application/grpc"))
 	httpL := tcpMux.Match(cmux.HTTP1Fast())
 
-	// initialize gRPC server instance
-	ms.grpcServer, err = prepareGRPC(ctx)
-	if err != nil {
-		log.Fatalln("Unable to initialize gRPC server instance")
-		return err
-	}
-
-	// initialize HTTP server
-	ms.httpServer, err = prepareHTTP(ctx, ms.serverName)
-	if err != nil {
-		log.Fatalln("Unable to initialize HTTP server instance")
-		return err
-	}
-
-	// Start servers
-	go func() {
-		if err := ms.grpcServer.Serve(grpcL); err != nil {
-			log.Fatalln("Unable to start external gRPC server")
+	go func(ms *MicroServer, grpcL net.Listener) {
+		// initialize gRPC server instance
+		m.grpcServer, err = prepareGRPC(ctx)
+		if err != nil {
+			log.Fatalf("Unable to initialize gRPC server instance: %s", err.Error())
 		}
-	}()
-	go func() {
-		if err := ms.httpServer.Serve(httpL); err != nil {
-			log.Fatalln("Unable to start HTTP server")
+		if err = m.grpcServer.Serve(grpcL); err != nil {
+			log.Fatalf("Unable to start external gRPC server: %s", err.Error())
 		}
-	}()
+	}(m, grpcL)
+
+	go func(ms *MicroServer, httpL net.Listener) {
+		// initialize HTTP server
+		m.httpServer, err = prepareHTTP(ctx, ms.serverName)
+		if err != nil {
+			log.Fatalf("Unable to initialize HTTP server instance: %s", err.Error())
+		}
+		if err = m.httpServer.Serve(httpL); err != nil {
+			log.Fatalf("Unable to start HTTP server: %s", err.Error())
+		}
+	}(m, httpL)
 
 	return tcpMux.Serve()
 }
