@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -20,11 +20,9 @@ func prepareGateway(ctx context.Context) (http.Handler, error) {
 		grpc.WithInsecure(),
 	}
 
-	// gRPC dialup options
 	conn, err := grpc.Dial(DemoAddr, opts...)
 	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("Fail to dial: %v", err)
 	}
 
 	// changes json serializer to include empty fields with default values

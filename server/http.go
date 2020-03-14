@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"io"
-	"log"
 	"mime"
 	"net/http"
 	"strings"
@@ -12,10 +11,6 @@ import (
 	pb "github.com/Stoakes/grpc-gateway-example/echopb"
 	"github.com/Stoakes/grpc-gateway-example/pkg/ui/data/swagger"
 	assetfs "github.com/philips/go-bindata-assetfs"
-)
-
-var (
-	httpServer *http.Server
 )
 
 func prepareHTTP(ctx context.Context, serverName string) (*http.Server, error) {
@@ -29,7 +24,6 @@ func prepareHTTP(ctx context.Context, serverName string) (*http.Server, error) {
 	// initialize grpc-gateway
 	gw, err := prepareGateway(ctx)
 	if err != nil {
-		log.Fatalln("Unable to initialize gRPC Gateway")
 		return nil, err
 	}
 	router.Handle("/", gw)

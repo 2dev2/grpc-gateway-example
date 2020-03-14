@@ -8,16 +8,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-// -----------------------------------------------------------------------------
-
 func prepareGRPC(context context.Context) (*grpc.Server, error) {
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterEchoServiceServer(grpcServer, newServer())
+	pb.RegisterEchoServiceServer(grpcServer, new(MicroServer))
 
 	return grpcServer, nil
-}
-
-func init() {
-
 }

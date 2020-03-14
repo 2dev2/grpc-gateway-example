@@ -18,13 +18,13 @@ import (
 	"os"
 	"strings"
 
+	pb "github.com/Stoakes/grpc-gateway-example/echopb"
+	"github.com/Stoakes/grpc-gateway-example/server"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
-
-	pb "github.com/Stoakes/grpc-gateway-example/echopb"
-	"github.com/Stoakes/grpc-gateway-example/server"
 )
 
 // echoCmd represents the echo command
